@@ -5,15 +5,13 @@ import java.util.List;
 
 public class Estoque {
     private List<Produtos> listadeprodutos;
-    private int capacidadeMax;
     private LocalDateTime ultimaAtualizacao;
     private List<Movimentacao> historicodeMov;
 
 
-    public Estoque(int capacidadeMax, LocalDateTime ultimaAtualizacao){
+    public Estoque(){
         listadeprodutos = new ArrayList<>();
-        this.capacidadeMax = capacidadeMax;
-        this.ultimaAtualizacao = ultimaAtualizacao;
+        this.ultimaAtualizacao = LocalDateTime.now();
         historicodeMov = new ArrayList<>();
     }
     
@@ -47,13 +45,14 @@ public class Estoque {
         }  
     }
 
+    public List<Movimentacao> gethistoricodeMov(){
+        return this.historicodeMov;
+    }
+
     public List<Produtos> listarProdutos(){
         return new ArrayList<>(listadeprodutos);
     }
 
-    public int capacidadeMax(){
-        return capacidadeMax;
-    }
 
     public LocalDateTime ultimaAtualizacao(){
         return ultimaAtualizacao;
@@ -93,7 +92,10 @@ public class Estoque {
         }
         return false;
     }
-
+    public List<Produtos> getListadeprodutos(){
+        return listadeprodutos;
+        
+    }
     public void imprimirRelatorio(){
         for (Produtos p: listadeprodutos){
             System.out.println(p);
