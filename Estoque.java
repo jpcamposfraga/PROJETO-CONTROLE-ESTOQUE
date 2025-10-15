@@ -4,15 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Estoque {
-    private List<Produtos> listadeprodutos;
+    private final List<Produtos> listadeprodutos;
     private LocalDateTime ultimaAtualizacao;
-    private List<Movimentacao> historicodeMov;
+    private final List<Movimentacao> historicodeMov;
 
 
     public Estoque(){
-        listadeprodutos = new ArrayList<>();
+        this.listadeprodutos = new ArrayList<>();
         this.ultimaAtualizacao = LocalDateTime.now();
-        historicodeMov = new ArrayList<>();
+        this.historicodeMov = new ArrayList<>();
     }
     
 

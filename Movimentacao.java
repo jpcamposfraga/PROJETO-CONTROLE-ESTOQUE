@@ -2,15 +2,16 @@
 import java.time.LocalDateTime;
 
 public class Movimentacao {
-    private int idProduto;
-    private tipoMovimentacao tipo;
-    private int quantidade;
-    private LocalDateTime dataMovimentacao;
-    private Produtos produto;
+    private static int contador=1;
+    private final int idProduto;
+    private final tipoMovimentacao tipo;
+    private final int quantidade;
+    private final LocalDateTime dataMovimentacao;
+    private final Produtos produto;
 
 
-    public Movimentacao(int idProduto, Produtos produto,tipoMovimentacao tipo,int quantidade,LocalDateTime dataMovimentacao ){
-        this.idProduto = idProduto;
+    public Movimentacao(int quantidade, Produtos produto,tipoMovimentacao tipo,LocalDateTime dataMovimentacao ){
+        this.idProduto = contador++;
         this.produto = produto;
         this.tipo = tipo;
         this.quantidade = quantidade;
@@ -23,22 +24,23 @@ public class Movimentacao {
         ENTRADA, SAIDA
     }
 
-    public Produtos getProduto(){
-        return produto;
+    public Produtos getProduto(){return produto;}
+  
+    public int getQuantidade(){return quantidade;}
 
-    }
+    public int getIdProduto(){return idProduto;}
 
-    public boolean isEntrada(){
-        return this.tipo==tipoMovimentacao.ENTRADA;
-    }
+    public tipoMovimentacao getTipo(){return tipo;}
 
-    public boolean isSaida(){
-        return this.tipo==tipoMovimentacao.SAIDA;
-    }
+    public LocalDateTime getDatamovimentacao(){return dataMovimentacao;}
 
-    public int getQuantidade(){
-        return quantidade;
-    }
+    public boolean isEntrada(){return this.tipo==tipoMovimentacao.ENTRADA;}
+
+    public boolean isSaida(){return this.tipo==tipoMovimentacao.SAIDA;}
+
+
+
+    
 
     @Override
     public String toString() {
