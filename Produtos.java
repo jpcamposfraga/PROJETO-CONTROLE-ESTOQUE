@@ -3,6 +3,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class Produtos {
+    private static int contador =1;
     private int quantidade;
     private String nome;
     private double preco;
@@ -14,11 +15,11 @@ public class Produtos {
     private LocalDateTime dataCadastro;
     private String unidadeMedida;
 
-    public Produtos(int quantidade, int id,LocalDate dataValidade,LocalDateTime dataCadastro, String unidadeMedida, String nome, String categoria,String fornecedor,
+    public Produtos(int quantidade,LocalDate dataValidade,LocalDateTime dataCadastro, String unidadeMedida, String nome, String categoria,String fornecedor,
     String descricao,double preco){
 
         this.quantidade = quantidade;
-        this.id = id;
+        this.id = contador++;
         this.dataValidade = dataValidade;
         this.dataCadastro = dataCadastro;
         this.unidadeMedida = unidadeMedida;
