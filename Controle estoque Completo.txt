@@ -1,0 +1,3 @@
+@echo off
+java -jar sistema-estoque-1.0.0-shaded.jar
+pause

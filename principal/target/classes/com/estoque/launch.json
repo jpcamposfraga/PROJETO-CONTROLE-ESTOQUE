@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "LoginScreen",
+            "request": "launch",
+            "mainClass": "LoginScreen",
+            "vmArgs": "--module-path \"C:/caminho/javafx-sdk-17/lib\" --add-modules javafx.controls",
+            "classpath": [
+                "${workspaceFolder}/lib/sqlite-jdbc-3.42.0.0.jar"
+            ]
+        }
+    ]
+}
