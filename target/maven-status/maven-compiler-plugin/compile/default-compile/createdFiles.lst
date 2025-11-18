@@ -1,0 +1,17 @@
+com\estoque\Estoque.class
+com\estoque\Relatorio$FormatoRelatorio.class
+com\estoque\Produtos.class
+com\estoque\MainScreen$1.class
+com\estoque\CadastroScreen.class
+com\estoque\EstoqueService.class
+com\estoque\MainScreen.class
+com\estoque\ResultadoOperacao.class
+com\estoque\Movimentacao.class
+com\estoque\DatabaseManager.class
+com\estoque\Relatorio.class
+com\estoque\ValidacaoException.class
+com\estoque\Movimentacao$tipoMovimentacao.class
+com\estoque\Usuario.class
+com\estoque\EstoqueInsuficienteException.class
+com\estoque\LoginScreen.class
+com\estoque\ProdutoNaoEncontradoException.class
