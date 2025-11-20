@@ -1,4 +1,5 @@
 package com.estoque;
+import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -6,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -40,11 +42,26 @@ public class MainScreen extends Application {
     private TableView<Produtos> tabelaProdutos;
     private Produtos produtos;
     private TableView<Movimentacao> tabelaMovimentacoes;
+    private TableView<Usuario> tabelaUsuarios;
     
     public MainScreen(Usuario usuario, DatabaseManager dbManager) {
         this.usuario = usuario;
         this.dbManager = dbManager.getInstance();
         this.service = new EstoqueService();
+    
+    }
+
+
+    private void carregardadosBanco(){
+        List<Produtos> produtosdoBanco = dbManager.listarTodosProdutos();
+        for(Produtos p:produtosdoBanco){
+            service.getEstoque().adicionarProduto(p);
+        }
+
+        List<Movimentacao> movimentacaos = dbManager.listarMovimentacoes();
+        for (Movimentacao m:movimentacaos){
+            service.getEstoque().gethistoricodeMov().add(m);
+        }
     }
     
     @Override
@@ -106,6 +123,7 @@ public class MainScreen extends Application {
     Button btnProdutos = criarBotaoMenu("Produtos", "#2ecc71");
     Button btnMovimentacoes = criarBotaoMenu("Movimentacoes", "#f39c12");
     Button btnRelatorios = criarBotaoMenu("Relatorios", "#9b59b6");
+    Button btnUsuarios = criarBotaoMenu("Usuários", "#ece90bff");
     
     
     btnDashboard.setOnAction(e -> {
@@ -128,27 +146,39 @@ public class MainScreen extends Application {
     btnRelatorios.setOnAction(e -> {
         root.setCenter(criarTelaRelatorios());
     });
+
+
+    btnUsuarios.setOnAction(e->{
+       
+        VBox telaUsuarios = criarTelaUsuarios();
+        root.setCenter(telaUsuarios);});
+        atualizarTabelaUsuarios();
+    if (usuario.getTipo().equals("ADMIN")){
+        menu.getChildren().addAll(btnDashboard, btnProdutos, btnMovimentacoes, btnRelatorios,btnUsuarios);
+    }else{
+
+        menu.getChildren().addAll(btnDashboard, btnProdutos, btnMovimentacoes, btnRelatorios);
+    }
     
-    menu.getChildren().addAll(btnDashboard, btnProdutos, btnMovimentacoes, btnRelatorios);
     
     return menu;
     }
 
     private void atualizarTodasTabelas() {
-    System.out.println("=== Atualizando todas as tabelas ===");
+    
     
     if (tabelaProdutos != null) {
-        System.out.println("Atualizando tabela de produtos...");
+        
         atualizarTabelaProdutos();
     } else {
-        System.out.println("Tabela de produtos é NULL");
+        
     }
     
     if (tabelaMovimentacoes != null) {
-        System.out.println("Atualizando tabela de movimentações...");
+        
         atualizarTabelaMovimentacoes();
     } else {
-        System.out.println("Tabela de movimentações é NULL - não foi criada ainda");
+        
     }
 }
 
@@ -318,7 +348,7 @@ public class MainScreen extends Application {
         Produtos p = dbManager.buscarProdutoPorNome(nome);
 
         if (p != null) {
-            // Exemplo: exibe num alerta
+            
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Produto encontrado");
             alert.setHeaderText("Detalhes do produto");
@@ -443,7 +473,6 @@ public class MainScreen extends Application {
             if (dialogButton == btnSalvar) {
                 try {
                     Produtos produto = new Produtos(
-                        
                         Integer.parseInt(txtQuantidade.getText()),
                         dataPicker.getValue(),
                         LocalDateTime.now(),
@@ -591,6 +620,257 @@ public class MainScreen extends Application {
             }
         });
     }
+
+    private VBox criarTelaUsuarios(){
+        VBox tela = new VBox(20);
+        tela.setPadding(new Insets(30));
+        tela.setStyle("-fx-background-color: #ecf0f1;");
+        
+        Label titulo = new Label("Usuários:");
+        titulo.setFont(Font.font("Arial", FontWeight.BOLD, 28));
+        HBox barraAcoes = new HBox(15);
+        
+        Button btnAddUsuario = new Button("Adicionar Usuário");
+        btnAddUsuario.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; " +
+            "-fx-font-weight: bold; -fx-padding: 10 20; -fx-cursor: hand;");
+        btnAddUsuario.setOnAction(e->abrirDialogNovoUsuario());
+        
+        Button btnRemoverUsuario = new Button("Remover Usuário");
+        btnRemoverUsuario.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; " +
+            "-fx-font-weight: bold; -fx-padding: 10 20; -fx-cursor: hand;");
+        btnRemoverUsuario.setOnAction(e -> removerUsuarioSelecionado());
+        
+        Button btnEditarUsuario = new Button("Editar Usuário");
+        btnEditarUsuario.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; " +
+            "-fx-font-weight: bold; -fx-padding: 10 20; -fx-cursor: hand;");
+        btnEditarUsuario.setOnAction(e -> editarUsuarioSelecionado());
+        
+        barraAcoes.getChildren().addAll(btnAddUsuario,btnRemoverUsuario,btnEditarUsuario);
+        
+        tabelaUsuarios = criarTabelaUsuarios();
+        atualizarTabelaUsuarios();
+        
+        
+        tela.getChildren().addAll(titulo, barraAcoes, tabelaUsuarios);
+        VBox.setVgrow(tabelaUsuarios, Priority.ALWAYS);
+
+        return tela;
+        
+    }
+
+    private void atualizarTabelaUsuarios() {
+    if (tabelaUsuarios != null) {
+        tabelaUsuarios.getItems().clear();
+        tabelaUsuarios.getItems().addAll(dbManager.listarUsuarios());
+        }
+    }
+
+    
+
+    private TableView<Usuario> criarTabelaUsuarios() {
+        TableView<Usuario> tabela = new TableView<>();
+        
+        TableColumn<Usuario, Integer> colId = new TableColumn<>("ID");
+        colId.setCellValueFactory(new PropertyValueFactory<>("id"));
+        colId.setPrefWidth(50);
+        
+        TableColumn<Usuario, String> colNome = new TableColumn<>("Nome");
+        colNome.setCellValueFactory(new PropertyValueFactory<>("nome"));
+        colNome.setPrefWidth(100);
+
+        TableColumn<Usuario, String> colUsuario = new TableColumn<>("Usuario");
+        colUsuario.setCellValueFactory(new PropertyValueFactory<>("usuario"));
+        colUsuario.setPrefWidth(100);
+        
+        TableColumn<Usuario, String> colTipo = new TableColumn<>("Tipo");
+        colTipo.setCellValueFactory(new PropertyValueFactory<>("tipo"));
+        colTipo.setPrefWidth(250);
+        
+        
+        
+        
+        
+        tabela.getColumns().addAll(colId, colNome,colUsuario,colTipo);
+        
+        return tabela;
+    }
+
+    private void abrirDialogNovoUsuario() {
+        Dialog<Usuario> dialog = new Dialog<>();
+        dialog.setTitle("Novo Usuário");
+        dialog.setHeaderText("Cadastrar Novo Usuário no Sistema");
+        
+        ButtonType btnSalvar = new ButtonType("Salvar", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(btnSalvar, ButtonType.CANCEL);
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20));
+        
+        TextField txtNome = new TextField();
+        TextField txtUsuario = new TextField();
+        TextField txtSenha = new TextField();
+        
+        ComboBox<String> cbRoles = new ComboBox<>();
+        cbRoles.setItems(FXCollections.observableArrayList("ADMIN","USER"));
+        cbRoles.setPromptText("Selecione o nível de acesso:");
+        cbRoles.getSelectionModel().select("USER");
+        VBox layoutRoles = new VBox(10, cbRoles);
+        layoutRoles.setStyle("-fx-padding: 10;");
+        
+        grid.add(new Label("Nome:"), 0, 0);
+        grid.add(txtNome, 1, 0);
+        grid.add(new Label("Usuário:"), 0, 1);
+        grid.add(txtUsuario, 1, 1);
+        grid.add(new Label("Tipo:"), 0, 3);
+        grid.add(cbRoles, 1, 3);
+        grid.add(new Label("Senha:"), 0, 2);
+        grid.add(txtSenha, 1, 2);
+        
+        
+        dialog.getDialogPane().setContent(grid);
+        
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == btnSalvar) {
+                try {
+                    Usuario user = new Usuario(txtNome.getText(),txtUsuario.getText(),cbRoles.getValue(),txtSenha.getText());
+                    return user;
+                } catch (Exception e) {
+                    mostrarAlerta("Erro", "Dados invalidos!");
+                    return null;
+                }
+            }
+            return null;
+        });
+        
+        dialog.showAndWait().ifPresent(user -> {
+            if (dbManager.inserirUsuario(user.getNome(),user.getUsuario(),user.getTipo(),user.getSenha())) {
+                mostrarAlerta("Sucesso", "Usuário cadastrado com sucesso!");
+                atualizarTabelaUsuarios();
+            } else {
+                mostrarAlerta("Erro", "Erro ao cadastrar usuário!");
+            }
+        });
+    }
+
+    private void editarUsuarioSelecionado(){
+        Usuario selecionado = tabelaUsuarios.getSelectionModel().getSelectedItem();
+        if (selecionado == null) {
+            mostrarAlerta("Aviso", "Selecione um usuário para editar!");
+            return;
+        }
+        /////////////// 
+        Dialog<Usuario> dialog = new Dialog<>();
+        dialog.setTitle("Editar Usuário");
+        dialog.setHeaderText("Editar informações do usuário");
+        
+        ButtonType btnSalvar = new ButtonType("Salvar", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(btnSalvar, ButtonType.CANCEL);
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20));
+        
+
+        
+
+        TextField txtNome = new TextField(selecionado.getNome());
+        TextField txtUsuario = new TextField(selecionado.getUsuario());
+        ComboBox<String> cbRoles = new ComboBox<>();
+        cbRoles.setItems(FXCollections.observableArrayList("ADMIN","USER"));
+        cbRoles.setPromptText("Selecione o nível de acesso:");
+        cbRoles.getSelectionModel().select("USER");
+        VBox layoutRoles = new VBox(10, cbRoles);
+        layoutRoles.setStyle("-fx-padding: 10;");
+        TextField txtSenha = new TextField(selecionado.getSenha());
+        
+
+        
+
+        
+        
+        grid.add(new Label("Nome:"), 0, 0);
+        grid.add(txtNome, 1, 0);
+        grid.add(new Label("Usuário:"), 0, 1);
+        grid.add(txtUsuario, 1, 1);
+        grid.add(new Label("Tipo:"), 0, 2);
+        grid.add(cbRoles, 1, 2);
+        grid.add(new Label("Senha:"), 0, 3);
+        grid.add(txtSenha, 1, 3);
+        
+        
+        dialog.getDialogPane().setContent(grid);
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == btnSalvar) {
+                try {
+                    
+                    
+                    selecionado.setNome(txtNome.getText());
+                    selecionado.setUsuario(txtUsuario.getText());
+                    selecionado.setTipo(cbRoles.getValue());
+                    selecionado.setSenha(txtSenha.getText());
+                    
+                    return selecionado;
+                    
+                } catch (Exception e) {
+                    mostrarAlerta("Erro", "Dados invalidos!");
+                    return null;
+                }
+            }
+            return null;
+        });
+        
+    dialog.showAndWait().ifPresent(userEditado -> {
+        boolean atualizado = false;
+        // Preferencial: usar método de update no dbManager
+        try {
+            atualizado = dbManager.atualizarUsuario(selecionado.getId(),selecionado.getNome(),selecionado.getUsuario(),selecionado.getTipo(),selecionado.getSenha());
+        } catch (NoSuchMethodError | UnsupportedOperationException e) {
+            
+            atualizado = dbManager.inserirUsuario(selecionado.getNome(),selecionado.getUsuario(),selecionado.getTipo(),selecionado.getSenha());
+        }
+
+        if (atualizado) {
+            mostrarAlerta("Sucesso", "Usuário atualizado com sucesso!");
+            atualizarTabelaUsuarios();
+        } else {
+            mostrarAlerta("Erro", "Erro ao atualizar usuário!");
+        }
+    });
+        //mostrarAlerta("Info", "Funcao em desenvolvimento");
+        
+        
+        
+    }
+    
+
+    private void removerUsuarioSelecionado(){
+        Usuario selecionado = tabelaUsuarios.getSelectionModel().getSelectedItem();
+        if (selecionado == null) {
+            mostrarAlerta("Aviso", "Selecione um usuário para remover!");
+            return;
+        }
+        
+        Alert confirmacao = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacao.setTitle("Confirmar Remocao");
+        confirmacao.setHeaderText("Deseja realmente remover este usuário?");
+        confirmacao.setContentText(selecionado.getNome());
+        
+        confirmacao.showAndWait().ifPresent(resposta -> {
+            if (resposta == ButtonType.OK) {
+                if (dbManager.removerUsuario(selecionado.getId())) {
+                    mostrarAlerta("Sucesso", "Usuário removido com sucesso!");
+                    atualizarTabelaUsuarios();
+                } else {
+                    mostrarAlerta("Erro", "Erro ao remover usuário!");
+                }
+            }
+        });
+    }
+    
+    
     
     private VBox criarTelaMovimentacoes() {
         VBox tela = new VBox(20);
@@ -843,22 +1123,50 @@ public class MainScreen extends Application {
     }
 
     private void gerarRelatorioHTML() {
-        try {
-            Relatorio relatorio = new Relatorio(service);
-            String arquivo = relatorio.salvarRelatorioCompleto(Relatorio.FormatoRelatorio.HTML);
-            
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Relatorio Gerado");
-            alert.setHeaderText("Sucesso!");
-            alert.setContentText("Relatorio gerado com sucesso!\n\nArquivo: " + arquivo + 
-                                "\n\nAbra o arquivo no navegador para visualizar.");
-            alert.showAndWait();
-        } catch (Exception e) {
-            mostrarAlerta("Erro", "Erro ao gerar relatorio: " + e.getMessage());
+    try {
+        
+        service.getEstoque().getListadeprodutos().clear();
+        service.getEstoque().gethistoricodeMov().clear();
+        carregardadosBanco();
+        
+        
+        String dirRelatorios = "relatorios";
+        File dir = new File(dirRelatorios);
+        if (!dir.exists()) {
+            boolean criado = dir.mkdirs();
+            System.out.println("Diretório criado: " + criado);
         }
+        
+        
+        Relatorio relatorio = new Relatorio(service);
+        String arquivo = relatorio.salvarRelatorioCompleto(Relatorio.FormatoRelatorio.HTML);
+        
+        
+        File arquivoGerado = new File(arquivo);
+        String caminhoAbsoluto = arquivoGerado.getAbsolutePath();
+        
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Relatório Gerado");
+        alert.setHeaderText("Sucesso!");
+        alert.setContentText(
+            "Relatório gerado com sucesso!\n\n" +
+            "Arquivo: " + caminhoAbsoluto + "\n\n" +
+            "Abra o arquivo no navegador para visualizar.\n" +
+            "Total de produtos: " + service.listarTodosProdutos().size() + "\n" +
+            "Total de movimentações: " + service.obterHistorico().size()
+        );
+        alert.showAndWait();
+        
+    } catch (Exception e) {
+        mostrarAlerta("Erro", "Erro ao gerar relatório: " + e.getMessage());
+        e.printStackTrace(); // Para debug no console
     }
+}
 
     private void mostrarRelatorioProdutos() {
+
+        service.getEstoque().getListadeprodutos().clear();
+        carregardadosBanco();
         Relatorio relatorio = new Relatorio(service);
         String conteudo = relatorio.gerarRelatorioProdutos();
         
@@ -871,6 +1179,8 @@ public class MainScreen extends Application {
     }
     
     private void mostrarRelatorioMovimentacoes() {
+        service.getEstoque().gethistoricodeMov().clear();
+        carregardadosBanco();
         Relatorio relatorio = new Relatorio(service);
         String conteudo = relatorio.gerarRelatorioMovimentacoes();
         
@@ -883,6 +1193,8 @@ public class MainScreen extends Application {
     }
     
     private void mostrarRelatorioEstoqueBaixo() {
+        service.getEstoque().getListadeprodutos().clear();
+        carregardadosBanco();
         Relatorio relatorio = new Relatorio(service);
         String conteudo = relatorio.relatorioProdutosEstoqueBaixo(10);
         

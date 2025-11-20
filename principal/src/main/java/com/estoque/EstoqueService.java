@@ -1,4 +1,6 @@
 package com.estoque;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -121,6 +123,21 @@ public class EstoqueService {
             }
         }
         return resultado;
+    }
+
+    public List<Produtos> produtosComValidadeProx(){
+        
+        List<Produtos> resultado = new ArrayList<>();
+        for (Produtos p: estoque.listarProdutos()){
+            LocalDate validade = p.getDataValidade();
+            if (ChronoUnit.DAYS.between(LocalDate.now(), validade)<=15 && ChronoUnit.DAYS.between(LocalDate.now(), validade)>=0){
+                resultado.add(p);
+
+            }
+            
+        }
+        return resultado;
+        
     }
     
     /**

@@ -16,17 +16,21 @@ import javafx.stage.Stage;
 public class LoginScreen extends Application {
     private DatabaseManager dbManager;
     private Usuario usuarioLogado;
+    private Stage primaryStage;
     
     @Override
     public void start(Stage primaryStage) {
+        this.primaryStage = primaryStage;
+
         dbManager = DatabaseManager.getInstance();
         
         primaryStage.setTitle("Sistema de Estoque - Login");
         primaryStage.setScene(criarTelaLogin(primaryStage));
         primaryStage.setWidth(400);
         primaryStage.setHeight(500);
-        primaryStage.setResizable(false);
+        primaryStage.setResizable(true);
         primaryStage.show();
+        
     }
     
     private Scene criarTelaLogin(Stage stage) {
@@ -120,15 +124,27 @@ public class LoginScreen extends Application {
         
         // Enter para login
         txtSenha.setOnAction(e -> btnLogin.fire());
+
+        // Link para cadastro
+        Label lblcadastro = new Label("Não tem cadastro? Clique aqui!");
+        lblcadastro.setFont(Font.font("Arial", 10));
+        lblcadastro.setTextFill(Color.BLUE);
+        lblcadastro.setStyle("-fx-cursor: hand; -fx-underline: true;"); // Adiciona estilo de link
+        lblcadastro.setOnMouseClicked(e -> {
+        CadastroScreen cadastroScreen = new CadastroScreen();
+        cadastroScreen.start(new Stage());
+        stage.close();
+    });
+
+        VBox rootA = new VBox(50, lblcadastro);
+        rootA.setStyle("-fx-padding: 50px; -fx-alignment: center;");
         
-        // Info usuario padrao
-        Label lblInfo = new Label("Usuario padrao: admin / admin123");
-        lblInfo.setFont(Font.font("Arial", 10));
-        lblInfo.setTextFill(Color.GRAY);
+        
+
         
         container.getChildren().addAll(
             titulo, subtitulo, usuarioBox, senhaBox, 
-            lblErro, btnLogin, lblInfo
+            lblErro, btnLogin,lblcadastro
         );
         
         root.getChildren().add(container);

@@ -1,4 +1,5 @@
 package com.estoque;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -12,8 +13,24 @@ import java.util.List;
 
 public class DatabaseManager {
     private static DatabaseManager instance;
-    private static final String DB_URL = "jdbc:sqlite:estoque.db";
-    private Connection conexao;
+private static final String DB_URL;
+private Connection conexao;
+
+// Bloco estático para definir o DB_URL corretamente
+static {
+    // 1. Pega o diretório 'home' do usuário (ex: C:\Users\SeuNome)
+    String userHome = System.getProperty("user.home");
+    
+    // 2. Cria uma pasta oculta para os dados da sua app (ex: C:\Users\SeuNome\.estoqueapp)
+    File dataDir = new File(userHome + File.separator + ".estoqueapp");
+    if (!dataDir.exists()) {
+        dataDir.mkdirs(); // Cria a pasta se ela não existir
+    }
+    
+    // 3. Define o caminho do banco de dados para dentro dessa pasta
+    DB_URL = "jdbc:sqlite:" + dataDir.getAbsolutePath() + File.separator + "estoque.db";
+    System.out.println("O banco de dados será salvo em: " + DB_URL);
+}
     
     private DatabaseManager() {
         conectar();
@@ -226,7 +243,7 @@ public boolean removerProduto(int id) {
     }
 
     public Produtos buscarProdutoPorNome(String nome){
-        String sql = "SELECT * FROM produtos WHERE nome = ?";
+        String sql = "SELECT * FROM produtos WHERE UPPER(nome) = UPPER(?)";
         try {
             PreparedStatement pstmt = conexao.prepareStatement(sql);
             pstmt.setString(1, nome);
@@ -348,8 +365,40 @@ public boolean removerProduto(int id) {
     
     return movimentacoes;
 }
+
+    public List<Usuario> listarUsuarios(){
+        List<Usuario> usuarios = new ArrayList<>();
+
+        String sql = "SELECT * FROM usuarios ORDER BY tipo";
+
+        try {
+            
+            Statement stmt = conexao.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+            
+            while (rs.next()) {
+                Usuario usuario = new Usuario(
+                    rs.getInt("id"),
+                    rs.getString("nome"),
+                 rs.getString("usuario"),
+                 rs.getString("tipo"),
+                 rs.getString("senha"));
+                 
+
+                usuarios.add(usuario);
+            }
+            
+            rs.close();
+            stmt.close();
+        } catch (SQLException e) {
+            System.err.println("Erro ao listar usuarios: " + e.getMessage());
+        }
+        
+        return usuarios;
+
+    }
     
-    public boolean inserirUsuario(String nome, String usuario, String senha, String tipo) {
+    public boolean inserirUsuario(String nome, String usuario, String tipo,String senha) {
         String sql = "INSERT INTO usuarios (nome, usuario, senha, tipo, data_cadastro) VALUES (?, ?, ?, ?, ?)";
         
         try {
@@ -382,7 +431,9 @@ public boolean removerProduto(int id) {
                     rs.getInt("id"),
                     rs.getString("nome"),
                     rs.getString("usuario"),
-                    rs.getString("tipo")
+                    rs.getString("tipo"),
+                    rs.getString("senha")
+                    
                 );
                 rs.close();
                 pstmt.close();
@@ -396,6 +447,39 @@ public boolean removerProduto(int id) {
         }
         
         return null;
+    }
+
+    public boolean removerUsuario(int id) {
+        String sql = "DELETE FROM usuarios WHERE id = ?";
+        
+        try (PreparedStatement pstmt = conexao.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, id);
+            int affectedRows = pstmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            System.err.println("Erro ao remover usuário: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean atualizarUsuario(int id, String nome,String usuario, String tipo, String senha) {
+        String sql = "UPDATE usuarios SET nome = ?, usuario = ?, tipo = ?, senha = ? WHERE id = ?";
+        
+        try {
+            PreparedStatement pstmt = conexao.prepareStatement(sql);
+            pstmt.setString(1, nome);
+            pstmt.setString(2, usuario);
+            pstmt.setString(3, tipo);
+            pstmt.setString(4, senha);
+            pstmt.setInt(5, id);
+            pstmt.executeUpdate();
+            pstmt.close();
+            return true;
+        } catch (SQLException e) {
+            System.err.println("Erro ao atualizar usuário: " + e.getMessage());
+            return false;
+        }
     }
     
     public void fecharConexao() {

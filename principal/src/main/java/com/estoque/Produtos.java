@@ -3,15 +3,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class Produtos {
-<<<<<<< HEAD:principal/src/main/java/com/estoque/Produtos.java
     
-=======
-    private static int contador =1;
->>>>>>> bbe135daed218b01db81f5abe32b0b9e71df5899:Produtos.java
+    
     private int quantidade;
     private String nome;
     private double preco;
-    private  int id;
+    private int id;
     private String categoria;
     private String fornecedor;
     private LocalDate dataValidade;
@@ -19,15 +16,11 @@ public class Produtos {
     private LocalDateTime dataCadastro;
     private String unidadeMedida;
 
-<<<<<<< HEAD:principal/src/main/java/com/estoque/Produtos.java
     public Produtos(int id,int quantidade,LocalDate dataValidade,LocalDateTime dataCadastro, String unidadeMedida, String nome, String categoria,String fornecedor,
-=======
-    public Produtos(int quantidade,LocalDate dataValidade,LocalDateTime dataCadastro, String unidadeMedida, String nome, String categoria,String fornecedor,
->>>>>>> bbe135daed218b01db81f5abe32b0b9e71df5899:Produtos.java
     String descricao,double preco){
 
         this.quantidade = quantidade;
-        this.id = contador++;
+        this.id = id;
         this.dataValidade = dataValidade;
         this.dataCadastro = dataCadastro;
         this.unidadeMedida = unidadeMedida;
@@ -39,13 +32,20 @@ public class Produtos {
 
     }
 
-    public Produtos(int quantidade, LocalDate dataValidade, LocalDateTime dataCadastro, 
-                        String unidadeMedida, String nome, String categoria, String fornecedor, 
-                        String descricao, double preco) {
-            this(0, quantidade, dataValidade, dataCadastro, 
-                unidadeMedida, nome, categoria, fornecedor, 
-                descricao, preco); // Chama o construtor principal passando '0' para o ID
-        }
+    public Produtos (int quantidade,LocalDate dataValidade,LocalDateTime dataCadastro, String unidadeMedida, String nome, String categoria,String fornecedor, String descricao, double preco){
+        this.quantidade = quantidade;
+        this.dataValidade = dataValidade;
+        this.dataCadastro = dataCadastro;
+        this.unidadeMedida = unidadeMedida;
+        this.nome = nome;
+        this.categoria = categoria;
+        this.fornecedor = fornecedor;
+        this.descricao = descricao;
+        this.preco = preco;
+    }
+    
+
+    
 
 
     public void setId(int id){

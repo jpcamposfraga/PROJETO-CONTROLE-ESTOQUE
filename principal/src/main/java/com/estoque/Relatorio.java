@@ -270,7 +270,7 @@ public class Relatorio {
         return caminhoArquivo;
     }
     
-    private String salvarRelatorioHTML(String caminhoArquivo) throws IOException {
+    public String salvarRelatorioHTML(String caminhoArquivo) throws IOException {
         try (BufferedWriter writer = new BufferedWriter(
                 new OutputStreamWriter(new FileOutputStream(caminhoArquivo), StandardCharsets.UTF_8))) {
             
@@ -302,6 +302,8 @@ public class Relatorio {
             writer.write("    <p>📦 Total de produtos: " + service.listarTodosProdutos().size() + "</p>\n");
             writer.write("    <p>💰 Valor total em estoque: R$ " + String.format("%.2f", service.calcularValorTotalEstoque()) + "</p>\n");
             writer.write("    <p>📊 Total de movimentações: " + service.obterHistorico().size() + "</p>\n");
+            writer.write("    <p>📉 Produtos com estoque baixo: " + service.produtosComEstoqueBaixo(10).size() + "<p>\n");
+            writer.write("    <p>⏳ Produtos com Validade Próxima:" + service.produtosComValidadeProx().size() + "</p>\n");
             
             Produtos maisVendido = produtoMaisVendido();
             if (maisVendido != null) {
@@ -343,7 +345,39 @@ public class Relatorio {
                     writer.write("    </tr>\n");
                 }
                 writer.write("  </table>\n");
+
             }
+            //estoque baixo
+            writer.write("  <h2>Produtos com Estoque Baixo</h2>\n");
+            writer.write("  <table>\n");
+            writer.write("    <tr><th>ID</th><th>Nome</th><th>Categoria</th><th>Fornecedor</th><th>Quantidade</th></tr>\n");
+            for (Produtos p : service.produtosComEstoqueBaixo(10)) {
+                writer.write("    <tr>\n");
+                writer.write("      <td>" + p.getId() + "</td>\n");
+                writer.write("      <td>" + escaparHTML(p.getNome()) + "</td>\n");
+                writer.write("      <td>" + escaparHTML(p.getCategoria()) + "</td>\n");
+                writer.write("      <td>" + escaparHTML(p.getFornecedor()) + "</td>\n");
+                writer.write("      <td>" + p.getQuantidade() + "</td>\n");
+                
+                writer.write("    </tr>\n");
+            }
+            writer.write("  </table>\n");
+
+            //data de validade proxima
+            writer.write("  <h2>Produtos com Validade Próxima</h2>\n");
+            writer.write("  <table>\n");
+            writer.write("    <tr><th>ID</th><th>Nome</th><th>Categoria</th><th>Data de Validade</th></tr>\n");
+            for (Produtos p : service.produtosComValidadeProx()) {
+                writer.write("    <tr>\n");
+                writer.write("      <td>" + p.getId() + "</td>\n");
+                writer.write("      <td>" + escaparHTML(p.getNome()) + "</td>\n");
+                writer.write("      <td>" + escaparHTML(p.getCategoria()) + "</td>\n");
+                writer.write("      <td>" + p.getDataValidade().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + "</td>\n");
+                writer.write("    </tr>\n");
+            }
+            writer.write("  </table>\n");
+
+
             
             writer.write("</div>\n</body>\n</html>");
         }
